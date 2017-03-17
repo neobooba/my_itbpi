@@ -3,6 +3,7 @@ package com.shinhan.activityexam;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == 0) {//SubActivity 가 종료되었으면
             if (resultCode == RESULT_OK) { //값을 넘기는 정상 종료일때만
                 String result = data.getStringExtra("Result");
+                Log.i("onActivity....",result);
                 EditText editText = (EditText) findViewById(R.id.edittext);
                 editText.setText(result);
             }
