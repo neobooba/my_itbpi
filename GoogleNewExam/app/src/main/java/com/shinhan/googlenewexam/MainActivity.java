@@ -36,23 +36,18 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static String rssUrl = "http://api.sbs.co.kr/xml/news/rss.jsp?pmDiv=entertainment";
+    //private static String rssUrl = "http://api.sbs.co.kr/xml/news/rss.jsp?pmDiv=entertainment";
+    private static String rssUrl = "http://www.kma.go.kr/wid/queryDFSRSS.jsp?zone=4128558000";
+    String[] weather = {"","","","","","",""};
 
     class RSSNewsItem {
-        String title;
-        String link;
-        String description;
-        String pubDate;
-        String author;
-        String category;
-        RSSNewsItem(String title, String link, String description, String pubDate, String author,
-                    String category) {   // data 저장용 class
-            this.title = title;
-            this.link = link;
-            this.author = author;
-            this.pubDate = pubDate;
-            this.description = description;
-            this.category = category;
+        String hour;
+        String day;
+        String wfKor;
+        RSSNewsItem(String hour, String day, String wfKor) {   // data 저장용 class
+            this.hour = hour;
+            this.day = day;
+            this.wfKor = wfKor;
         }
     }
     ArrayList<RSSNewsItem> newsItemList = new ArrayList<RSSNewsItem>();  // 동적배열
@@ -63,9 +58,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-        newsItemList.add(new RSSNewsItem("제목","https://m.naver.com","설명1","날짜1","작성자1","카테고리"));
-        newsItemList.add(new RSSNewsItem("제목","https://m.naver.com","설명2","날짜2","작성자2","카테고리"));
-        newsItemList.add(new RSSNewsItem("제목","https://m.naver.com","설명3","날짜3","작성자3","카테고리"));
+        newsItemList.add(new RSSNewsItem("제목","https://m.naver.com","설명1"));
+        newsItemList.add(new RSSNewsItem("제목","https://m.naver.com","설명2"));
+        newsItemList.add(new RSSNewsItem("제목","https://m.naver.com","설명3"));
         ListView listView = (ListView)findViewById(R.id.listview);
         listAdapter = new RSSListAdapter(MainActivity.this);
         listView.setAdapter(listAdapter);
@@ -91,11 +86,9 @@ public class MainActivity extends AppCompatActivity {
             TextView dataItem02 = (TextView)view.findViewById(R.id.dataItem02);
             TextView dataItem03 = (TextView)view.findViewById(R.id.dataItem03);
             WebView dataItem04 = (WebView)view.findViewById(R.id.dataItem04);
-            dataItem01.setText(newsItemList.get(position).title);
-            dataItem02.setText(newsItemList.get(position).pubDate);
-            dataItem03.setText(newsItemList.get(position).category);
-            //dataItem04.loadUrl(newsItemList.get(position).link);
-            dataItem04.loadData(newsItemList.get(position).description, "TEXT/HTML;charset=utf-8","UTF-8");
+            dataItem01.setText(newsItemList.get(position).hour);
+            dataItem02.setText(newsItemList.get(position).day);
+            dataItem03.setText(newsItemList.get(position).wfKor);
             return view;
         }
 
@@ -171,11 +164,12 @@ public class MainActivity extends AppCompatActivity {
         int count = 0;
         newsItemList.clear(); //동적배열 초기화
         Element documentElement = document.getDocumentElement();
-        NodeList nodelist = documentElement.getElementsByTagName("item");
+        NodeList nodelist = documentElement.getElementsByTagName("data");
         if((nodelist != null) && (nodelist.getLength()>0)) {
             for (int i = 0; i < nodelist.getLength(); i++) { //아이템 개수만큼 반복
                 RSSNewsItem newsItem = dissectNode(nodelist, i); //아이템정보 추출
-                if(newsItem != null) { //정상적인 아이템객체이면 동적배열에 추가
+
+                if(newsItem != null) {
                     newsItemList.add(newsItem);
                     count++;
                 }
@@ -188,19 +182,21 @@ public class MainActivity extends AppCompatActivity {
         RSSNewsItem newsItem = null ;
         try{
             Element entry = (Element)nodelist.item(index); //아이템객체 추출
-            Element title = (Element)entry.getElementsByTagName("title").item(0);
-            Element link = (Element)entry.getElementsByTagName("link").item(0);
-            Element description = (Element)entry.getElementsByTagName("description").item(0);
-            Element pubData = (Element)entry.getElementsByTagName("pubDate").item(0);
-            Element author = (Element)entry.getElementsByTagName("author").item(0);
-            Element category = (Element)entry.getElementsByTagName("category").item(0);
-            String titleValue = getElementString(title);
-            String linkValue = getElementString(link);
-            String descriptionValue = getElementString(description);
-            String pubDataValue = getElementString(pubData);
-            String authorValue = getElementString(author);
-            String categoryValue = getElementString(category);
-            newsItem = new RSSNewsItem(titleValue, linkValue, descriptionValue, pubDataValue, authorValue, categoryValue);
+            Element hour = (Element)entry.getElementsByTagName("hour").item(0);
+            Element day = (Element)entry.getElementsByTagName("day").item(0);
+            Element wfKor = (Element)entry.getElementsByTagName("wfKor").item(0);
+
+            //String seqValue = getElementString(seq);
+            //Log.i("+++++ seq:", seqValue.toString());
+            String hourValue = getElementString(hour);
+            String dayValue = getElementString(day);
+            String wfKorValue = getElementString(wfKor);
+
+            if ((index == 0) || (dayValue.equals("1") && hourValue.equals("9")) ||
+                    (dayValue.equals("2") && hourValue.equals("9")) ){
+                newsItem = new RSSNewsItem(hourValue, dayValue, wfKorValue);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
